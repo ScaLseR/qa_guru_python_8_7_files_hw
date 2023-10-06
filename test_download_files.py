@@ -1,35 +1,21 @@
-import os.path
-import time
-
-import requests
-from selene import query
-from selene.support.shared import browser
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+"""Домашняя работа: Создать новые тесты, которые заархивируют имеющиеся в resources различные типы файлов
+(xls, xlsx, pdf, txt) в один архив, отправят его в tmp и проверят тестом в архиве каждый из файлов,
+что он является тем самым, который был заархивирован, не распаковывая архив."""
+import os
+from utils import RESOURCES_PATH
+from zipfile import ZipFile
 
 
-def test_download_file_with_selene_by_href():
-    browser.open("https://github.com/pytest-dev/pytest/blob/main/README.rst")
+def test_zip_files_from_resources(tmp_dir):
+    # получаем список имен файлов для дальнейшего использования в тестах
+    file_in_dir = os.listdir(RESOURCES_PATH)
+    # создаем zip архив в директории tmp со всеми файлами находящимися в resources
+    with ZipFile(os.path.join(tmp_dir, 'test.zip'), mode='w') as zf:
+        for file in file_in_dir:
+            add_file = os.path.join(RESOURCES_PATH, file)
+            zf.write(add_file, arcname=add_file.split("\\")[-1])
 
-    href = browser.element("[data-testid='raw-button']").get(query.attribute("href"))
-    content = requests.get(href).content
-    with open("pytest_readme.rst", 'wb') as f:
-        f.write(content)
+    # проверяем наличие всех файлов в созданном архиве по списку имен
+    with ZipFile(os.path.join(tmp_dir, 'test.zip'), mode='r') as zf:
+        assert file_in_dir == zf.namelist()
 
-    with open("pytest_readme.rst") as f:
-        text = f.read()
-        assert "framework makes it easy to write" in text
-
-
-def test_download_file_with_selene_by_button(our_browser):
-    browser.config.driver = our_browser
-
-    browser.open("https://github.com/pytest-dev/pytest/blob/main/README.rst")
-    browser.element("[data-testid='download-raw-button']").click()
-
-    time.sleep(5)  # слип здесь только для демонстрации
-
-    with open('tmp/README.rst') as f:
-        text = f.read()
-        assert "framework makes it easy to write" in text
