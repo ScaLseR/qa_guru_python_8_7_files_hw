@@ -14,12 +14,17 @@ def test_zip_files_from_resources_names(tmp_dir):
         assert file_in_dir == zf.namelist()
 
 
-def test_zip_file_text(tmp_dir):
-    """Проверяем соответствие размеров исходного и файла в архиве,
+def test_zip_file_txt(tmp_dir):
+    """Проверяем соответствие размеров исходного txt и файла в архиве,
     + проверка файла по содержимому"""
+    # получаем размер исходного файла
     txt_file_size = os.path.getsize(os.path.join(RESOURCES_PATH, 'Hello.txt'))
+    # получаем содержимое исходного файла
+    with open(os.path.join(RESOURCES_PATH, 'Hello.txt'), 'r') as f:
+        txt_file_text = f.read()
+
     with ZipFile(os.path.join(tmp_dir, 'test.zip'), mode='r') as zf:
         # проверяем на соответсвие размеру файла
         assert txt_file_size == zf.getinfo('Hello.txt').file_size
         # проверяем по содержимому
-        assert 'Hello world' in zf.read('Hello.txt').decode()
+        assert txt_file_text in zf.read('Hello.txt').decode()
