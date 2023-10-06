@@ -4,6 +4,7 @@
 import os
 from utils import RESOURCES_PATH
 from zipfile import ZipFile
+from xlrd import open_workbook
 
 
 def test_zip_files_from_resources_names(tmp_dir):
@@ -17,14 +18,31 @@ def test_zip_files_from_resources_names(tmp_dir):
 def test_zip_file_txt(tmp_dir):
     """Проверяем соответствие размеров исходного txt и файла в архиве,
     + проверка файла по содержимому"""
-    # получаем размер исходного файла
-    txt_file_size = os.path.getsize(os.path.join(RESOURCES_PATH, 'Hello.txt'))
     # получаем содержимое исходного файла
     with open(os.path.join(RESOURCES_PATH, 'Hello.txt'), 'r') as f:
         txt_file_text = f.read()
 
     with ZipFile(os.path.join(tmp_dir, 'test.zip'), mode='r') as zf:
-        # проверяем на соответсвие размеру файла
-        assert txt_file_size == zf.getinfo('Hello.txt').file_size
+        # проверяем на соответствие размеру файла
+        assert os.path.getsize(os.path.join(RESOURCES_PATH, 'Hello.txt')) == zf.getinfo('Hello.txt').file_size
         # проверяем по содержимому
         assert txt_file_text in zf.read('Hello.txt').decode()
+
+
+def test_zip_file_xls(tmp_dir):
+    """Проверяем соответствие размеров исходного xls и файла в архиве,
+    + проверка файла по содержимому"""
+    # получаем содержимое исходного xls файла
+    book = open_workbook(os.path.join(RESOURCES_PATH, 'file_example_XLS_10.xls'))
+    sheets_count = book.nsheets
+    sheets_names = book.sheet_names()
+    xls_file_text = book.sheet_by_index(0).cell_value(9, 3)
+
+    with ZipFile(os.path.join(tmp_dir, 'test.zip'), mode='r') as zf:
+        # проверяем на соответствие размеру файла
+        assert os.path.getsize(os.path.join(RESOURCES_PATH, 'file_example_XLS_10.xls')) == zf.getinfo('file_example_XLS_10.xls').file_size
+
+        xls_file = zf.open('file_example_XLS_10.xls')
+        # book = zf.open('file_example_XLS_10.xls')
+        # проверяем по количеству листов
+       # assert sheets_count == xl_file.nsheets
