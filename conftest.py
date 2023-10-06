@@ -5,7 +5,7 @@ from utils import TMP_PATH, RESOURCES_PATH
 from zipfile import ZipFile
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope='session')
 def tmp_dir():
     if not os.path.exists(TMP_PATH):
         os.mkdir('tmp')
@@ -16,6 +16,6 @@ def tmp_dir():
             add_file = os.path.join(RESOURCES_PATH, file)
             zf.write(add_file, arcname=add_file.split("\\")[-1])
 
-    yield TMP_PATH
+    yield
 
     shutil.rmtree(TMP_PATH, ignore_errors=True)
