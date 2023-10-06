@@ -1,3 +1,4 @@
 pytest
 xlrd
 openpyxl
+pypdf

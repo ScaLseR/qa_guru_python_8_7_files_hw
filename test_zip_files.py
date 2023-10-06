@@ -7,6 +7,7 @@ from zipfile import ZipFile
 from xlrd import open_workbook
 import pytest
 from openpyxl import *
+from pypdf import PdfReader
 
 
 def test_zip_files_from_resources_names():
@@ -65,7 +66,7 @@ def test_zip_file_xlsx(file_name):
     + проверка файла по содержимому"""
     # получаем размер исходного файла
     xlsx_file_size = os.path.getsize(os.path.join(RESOURCES_PATH, file_name))
-    # получаем содержимое исходного xls файла
+    # получаем содержимое исходного xlsx файла
     book = load_workbook(os.path.join(RESOURCES_PATH, file_name))
     sheets_count = len(book.sheetnames)
     sheets_names = book.sheetnames
@@ -84,3 +85,25 @@ def test_zip_file_xlsx(file_name):
         # проверяем по содержимому
         sheet_zip = book_zip.active
         assert xlsx_file_text == sheet_zip.cell(9, 3).value
+
+
+@pytest.mark.parametrize("file_name", ['Python Testing with Pytest (Brian Okken).pdf'])
+def test_zip_file_pdf(file_name):
+    """Проверяем соответствие размеров исходного pdf и файла в архиве,
+    + проверка файла по содержимому"""
+    # получаем размер исходного файла
+    pdf_file_size = os.path.getsize(os.path.join(RESOURCES_PATH, file_name))
+    # получаем содержимое исходного pdf файла
+    reader = PdfReader(os.path.join(RESOURCES_PATH, file_name))
+    pdf_page_count = len(reader.pages)
+    pdf_page_text = reader.pages[1].extract_text()
+
+    with ZipFile(os.path.join(TMP_PATH, 'test.zip'), mode='r') as zf:
+        # проверяем на соответствие размеру файла
+        assert pdf_file_size == zf.getinfo(file_name).file_size
+        # получаем содержимое pdf файла в zip архиве
+        zip_reader = PdfReader(zf.open(file_name, 'r'))
+        # проверяем по количеству листов
+        assert pdf_page_count == len(zip_reader.pages)
+        # проверяем по содержимому
+        assert pdf_page_text == zip_reader.pages[1].extract_text()
