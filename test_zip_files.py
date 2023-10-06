@@ -6,16 +6,20 @@ from utils import RESOURCES_PATH
 from zipfile import ZipFile
 
 
-def test_zip_files_from_resources(tmp_dir):
-    # получаем список имен файлов для дальнейшего использования в тестах
+def test_zip_files_from_resources_names(tmp_dir):
+    """Проверяем наличие в созданном архиве всех файлов по списку имен"""
+    # получаем список имен файлов в resources
     file_in_dir = os.listdir(RESOURCES_PATH)
-    # создаем zip архив в директории tmp со всеми файлами находящимися в resources
-    with ZipFile(os.path.join(tmp_dir, 'test.zip'), mode='w') as zf:
-        for file in file_in_dir:
-            add_file = os.path.join(RESOURCES_PATH, file)
-            zf.write(add_file, arcname=add_file.split("\\")[-1])
-
-    # проверяем наличие всех файлов в созданном архиве по списку имен
     with ZipFile(os.path.join(tmp_dir, 'test.zip'), mode='r') as zf:
         assert file_in_dir == zf.namelist()
 
+
+def test_zip_file_text(tmp_dir):
+    """Проверяем соответствие размеров исходного и файла в архиве,
+    + проверка файла по содержимому"""
+    txt_file_size = os.path.getsize(os.path.join(RESOURCES_PATH, 'Hello.txt'))
+    with ZipFile(os.path.join(tmp_dir, 'test.zip'), mode='r') as zf:
+        # проверяем на соответсвие размеру файла
+        assert txt_file_size == zf.getinfo('Hello.txt').file_size
+        # проверяем по содержимому
+        assert 'Hello world' in zf.read('Hello.txt').decode()
