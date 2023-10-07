@@ -6,7 +6,7 @@ from utils import RESOURCES_PATH, TMP_PATH
 from zipfile import ZipFile
 from xlrd import open_workbook
 import pytest
-from openpyxl import *
+from openpyxl import load_workbook
 from pypdf import PdfReader
 
 
@@ -25,7 +25,7 @@ def test_zip_file_txt(file_name):
     # получаем размер исходного файла
     txt_file_size = os.path.getsize(os.path.join(RESOURCES_PATH, file_name))
     # получаем содержимое исходного файла
-    with open(os.path.join(RESOURCES_PATH, file_name), 'r') as f:
+    with open(os.path.join(RESOURCES_PATH, file_name)) as f:
         txt_file_text = f.read()
 
     with ZipFile(os.path.join(TMP_PATH, 'test.zip'), mode='r') as zf:
